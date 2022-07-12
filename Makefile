@@ -1,5 +1,5 @@
 develop:
-	npx webpack serve --open
+	npx webpack-dev-server
 
 install:
 	npm ci
