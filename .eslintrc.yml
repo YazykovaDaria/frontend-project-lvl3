@@ -1,8 +1,6 @@
 env:
   browser: true
   es2021: true
-  plugins:
-  - babel
   parser: "@babel/eslint-parser"
 extends:
   - airbnb-base
