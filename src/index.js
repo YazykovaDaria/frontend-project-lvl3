@@ -1,9 +1,10 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { observerModel } from './wiev';
+import observerModel from './wiev';
 import validateUrl from './utils/validation';
 
 const RSS_FORM = document.getElementById('rss-form');
-
+const RSS_INPUT = document.querySelector('#url-input');
+//console.log(RSS_INPUT);
 const model = {
   rssForm: {
     state: 'waiting',
@@ -22,8 +23,8 @@ RSS_FORM.addEventListener('submit', (e) => {
   validateUrl(url, model.rssForm.inputValue)
     .then((res) => {
       watchedModel.rssForm.inputValue = [res];
-      // watchedModel.rssForm.validationMessage = 'RSS успешно загружен'
-      console.log(res);
+      //watchedModel.rssForm.validationMessage = 'RSS успешно загружен'
+      //console.log(res);
     })
     .catch((err) => {
       watchedModel.rssForm.validationMessage = err.message;
@@ -31,3 +32,7 @@ RSS_FORM.addEventListener('submit', (e) => {
       //console.log(err.message);
     });
 });
+
+RSS_INPUT.addEventListener('input', () => {
+  watchedModel.rssForm.state = 'waiting';
+})
