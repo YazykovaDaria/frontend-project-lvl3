@@ -1,41 +1,33 @@
-// import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { string } from 'yup';
+import { observerModel } from './wiev';
+import validateUrl from './utils/validation';
+
+const RSS_FORM = document.getElementById('rss-form');
 
 const model = {
   rssForm: {
-    state: 'filling',
-    inputValue: '',
-    validationError: '',
+    state: 'waiting',
+    inputValue: [],
+    validationMessage: '',
   },
 };
 
-const isValidateUrl = (url) => {
-  const validValues = [model.rssForm.inputValue];
-  const urlScheema = string().url().notOneOf(validValues);
-  return urlScheema.isValid(url);
-};
+const watchedModel = observerModel(model);
 
-const form = document.getElementById('rss-form');
-
-form.addEventListener('submit', (e) => {
+RSS_FORM.addEventListener('submit', (e) => {
   e.preventDefault();
-  let { state, inputValue, validationError } = model.rssForm;
+  watchedModel.rssForm.state = 'validation';
+  const url = new FormData(e.target).get('url').trim();
 
-  const formData = new FormData(e.target).get('url').trim();
-  //разобраться с асинхронностью!!!
-  isValidateUrl(formData)
-    .then((valid) => {
-      //console.log(valid);
-      // if (valid) {
-      //   state = 'filling';
-      // } else {
-      //   state = 'failed';
-      //   validationError = 'Ссылка должна быть валидным URL';
-      // }
-      
+  validateUrl(url, model.rssForm.inputValue)
+    .then((res) => {
+      watchedModel.rssForm.inputValue = [res];
+      // watchedModel.rssForm.validationMessage = 'RSS успешно загружен'
+      console.log(res);
+    })
+    .catch((err) => {
+      watchedModel.rssForm.validationMessage = err.message;
+      watchedModel.rssForm.state = 'invalid';
+      //console.log(err.message);
     });
-    inputValue = formData;
- console.log(state, inputValue, validationError);
-  // console.log(formData);
 });
