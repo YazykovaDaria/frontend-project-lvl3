@@ -1,10 +1,12 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
+import i18next from 'i18next';
 import observerModel from './wiev';
 import validateUrl from './utils/validation';
+import locale from './utils/locales';
 
 const RSS_FORM = document.getElementById('rss-form');
 const RSS_INPUT = document.querySelector('#url-input');
-//console.log(RSS_INPUT);
+
 const model = {
   rssForm: {
     state: 'waiting',
@@ -13,7 +15,16 @@ const model = {
   },
 };
 
-const watchedModel = observerModel(model);
+i18next.init(locale);
+
+
+
+//console.log(i18next.t('invalidUrl'));
+// i18next.init(messages)
+// .then((i) => console.log(i.t('invalidUrl')))
+//i18n.then((i) => console.log(i))
+
+const watchedModel = observerModel(model, i18next);
 
 RSS_FORM.addEventListener('submit', (e) => {
   e.preventDefault();
@@ -27,9 +38,9 @@ RSS_FORM.addEventListener('submit', (e) => {
       //console.log(res);
     })
     .catch((err) => {
-      watchedModel.rssForm.validationMessage = err.message;
+      // watchedModel.rssForm.validationMessage = err.message;
       watchedModel.rssForm.state = 'invalid';
-      //console.log(err.message);
+      console.log(err);
     });
 });
 
