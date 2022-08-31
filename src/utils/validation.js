@@ -1,7 +1,16 @@
-import { string } from 'yup';
+import { string, setLocale } from 'yup';
 
-const validateUrl = (url, validatedValues) => {
-  const urlScheema = string().url('Ссылка должна быть валидным URL').notOneOf(validatedValues, 'RSS уже существует');
+const validateUrl = (url, validatedValues, i18n) => {
+  setLocale({
+    string: {
+      url: i18n.t('rssForm.invalidUrl'),
+    },
+    mixed: {
+      notOneOf: i18n.t('rssForm.repeatUrl'),
+    },
+  });
+
+  const urlScheema = string().url().notOneOf(validatedValues);
   return urlScheema.validate(url, { abortEarly: false });
 };
 
