@@ -18,12 +18,6 @@ const model = {
 i18next.init(locale);
 
 
-
-//console.log(i18next.t('invalidUrl'));
-// i18next.init(messages)
-// .then((i) => console.log(i.t('invalidUrl')))
-//i18n.then((i) => console.log(i))
-
 const watchedModel = observerModel(model, i18next);
 
 RSS_FORM.addEventListener('submit', (e) => {
@@ -31,14 +25,14 @@ RSS_FORM.addEventListener('submit', (e) => {
   watchedModel.rssForm.state = 'validation';
   const url = new FormData(e.target).get('url').trim();
 
-  validateUrl(url, model.rssForm.inputValue)
+  validateUrl(url, model.rssForm.inputValue, i18next)
     .then((res) => {
       watchedModel.rssForm.inputValue = [res];
       //watchedModel.rssForm.validationMessage = 'RSS успешно загружен'
       //console.log(res);
     })
     .catch((err) => {
-      // watchedModel.rssForm.validationMessage = err.message;
+      watchedModel.rssForm.validationMessage = err.message;
       watchedModel.rssForm.state = 'invalid';
       console.log(err);
     });
