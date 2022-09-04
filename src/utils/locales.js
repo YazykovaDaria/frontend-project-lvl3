@@ -8,7 +8,13 @@ export default {
           invalidUrl: 'Ссылка должна быть валидным URL',
           repeatUrl: 'RSS уже существует',
           sucsses: 'RSS успешно загружен',
+          upload: 'RSS загружается',
         },
+        posts: {
+          title: 'Посты',
+          btn: 'Просмотр',
+        },
+        feed: 'Фиды',
       },
     },
   },
