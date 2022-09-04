@@ -7,6 +7,7 @@ export default {
         rssForm: {
           invalidUrl: 'Ссылка должна быть валидным URL',
           repeatUrl: 'RSS уже существует',
+          sucsses: 'RSS успешно загружен',
         },
       },
     },
