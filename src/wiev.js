@@ -4,7 +4,8 @@ const RSS_FEEDBACK = document.querySelector('.feedback');
 const RSS_BUTTON = document.querySelector('#rss-btn');
 const RSS_INPUT = document.querySelector('#url-input');
 
-const toggleDisabled = (bool) => (bool ? RSS_BUTTON.setAttribute('disabled', true) : RSS_BUTTON.removeAttribute('disabled', false));
+const toggleDisabled = (bool) => RSS_BUTTON.disabled = bool;
+//(bool ? RSS_BUTTON.setAttribute('disabled', true) : RSS_BUTTON.removeAttribute('disabled', false));
 
 const wievInvalidRss = (validationMessage) => {
   RSS_FEEDBACK.textContent = validationMessage;
@@ -12,9 +13,9 @@ const wievInvalidRss = (validationMessage) => {
   toggleDisabled(true);
 };
 
-const observerModel = (model) => onChange(model, (path, value) => {
-  console.log('value:', value);
-  const { inputValue, validationMessage } = model.rssForm;
+const observerModel = (model, i18n) => onChange(model, (path, value) => {
+  //console.log('value:', value);
+  const { validationMessage } = model.rssForm;
   switch (path) {
     case 'rssForm.state':
       if (value === 'invalid') wievInvalidRss(validationMessage);
