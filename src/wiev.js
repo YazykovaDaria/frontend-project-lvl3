@@ -1,9 +1,6 @@
 /* eslint-disable no-param-reassign */
 import onChange from 'on-change';
 
-const FEED_CONTAINER = document.querySelector('.feeds');
-const POSTS_CONTAINER = document.querySelector('.posts');
-
 const rssFormRender = (state, feedbackMessage, {
   feedback, btn, form, input,
 }) => {
@@ -23,10 +20,6 @@ const rssFormRender = (state, feedbackMessage, {
       feedback.classList.add('text-danger');
       btn.disabled = true;
       break;
-    // case 'sending':
-    //   feedback.classList.add('text-danger');
-    //   btn.disabled = true;
-    //   break;
     case 'filling':
       form.reset();
       feedback.classList.remove('text-danger');
@@ -40,28 +33,25 @@ const rssFormRender = (state, feedbackMessage, {
   }
 };
 
-const feedRender = (feedContent, i18n) => {
+const feedRender = (feedContent, i18n, feedContainer) => {
   const feedTitle = document.createElement('h2');
   feedTitle.textContent = i18n.t('feed');
-  feedTitle.setAttribute('class', 'mb-3');
+  feedTitle.classList.add('mb-3');
   const title = document.createElement('p');
   title.textContent = feedContent.title;
-  FEED_CONTAINER.setAttribute('id', feedContent.id);
+  feedContainer.setAttribute('id', feedContent.id);
   const description = document.createElement('p');
   description.textContent = feedContent.description;
-  description.setAttribute('class', 'text-secondary');
-  FEED_CONTAINER.append(feedTitle);
-  FEED_CONTAINER.append(title);
-  FEED_CONTAINER.append(description);
+  description.classList.add('text-secondary');
+  feedContainer.append(feedTitle);
+  feedContainer.append(title);
+  feedContainer.append(description);
 };
 
-const postsRender = (posts, i18n) => {
+const postsRender = (posts, i18n, { container, list }) => {
   const postsTitle = document.createElement('h2');
   postsTitle.textContent = i18n.t('posts.title');
   const btnContent = i18n.t('posts.btn');
-
-  const postsList = document.createElement('ul');
-  postsList.setAttribute('class', 'list-group');
 
   const postsLink = posts.map((post) => {
     const link = `<li class="d-flex justify-content-between align-items-center my-2">
@@ -74,14 +64,12 @@ const postsRender = (posts, i18n) => {
     // link.textContent = post.title;
     return link;
   });
-  postsList.innerHTML = postsLink.join('');
-  POSTS_CONTAINER.append(postsTitle);
-  POSTS_CONTAINER.append(postsList);
-  // console.log(postsLink);
+  list.innerHTML = postsLink.join('');
+  container.append(postsTitle);
+  container.append(list);
 };
 
 const appWiev = (model, elements, i18n) => onChange(model, (path, value) => {
-  // console.log(elements);
   const { feedbackMessage } = model.rssForm;
 
   switch (path) {
@@ -89,10 +77,10 @@ const appWiev = (model, elements, i18n) => onChange(model, (path, value) => {
       rssFormRender(value, feedbackMessage, elements.rssForm);
       break;
     case 'feed':
-      feedRender(value, i18n);
+      feedRender(value, i18n, elements.feedContainer);
       break;
     case 'posts':
-      postsRender(value, i18n);
+      postsRender(value, i18n, elements.posts);
       break;
 
     default:
