@@ -1,34 +1,40 @@
+/* eslint-disable no-param-reassign */
 import onChange from 'on-change';
 
-const RSS_FEEDBACK = document.querySelector('.feedback');
-const RSS_BUTTON = document.querySelector('#rss-btn');
-// const RSS_INPUT = document.querySelector('#url-input');
 const FEED_CONTAINER = document.querySelector('.feeds');
 const POSTS_CONTAINER = document.querySelector('.posts');
 
-const toggleDisabled = (bool) => RSS_BUTTON.disabled = bool;
-
-const rssFormRender = (state, feedback) => {
-  RSS_FEEDBACK.textContent = feedback;
+const rssFormRender = (state, feedbackMessage, {
+  feedback, btn, form, input,
+}) => {
+  feedback.textContent = feedbackMessage;
   switch (state) {
     case 'invalid':
-      RSS_FEEDBACK.setAttribute('class', 'text-danger');
-      toggleDisabled(true);
+      feedback.classList.add('text-danger');
+      btn.disabled = true;
+      input.classList.add('is-invalid');
       break;
     case 'waiting':
-      RSS_FEEDBACK.setAttribute('class', 'text-success');
-      toggleDisabled(false);
+      feedback.classList.add('text-danger');
+      btn.disabled = false;
       break;
     case 'validation':
-
-      RSS_FEEDBACK.setAttribute('class', 'text-danger');
-      toggleDisabled(true);
-      break;
     case 'sending':
-      RSS_FEEDBACK.setAttribute('class', 'text-warning');
-      toggleDisabled(true);
+      feedback.classList.add('text-danger');
+      btn.disabled = true;
       break;
-
+    // case 'sending':
+    //   feedback.classList.add('text-danger');
+    //   btn.disabled = true;
+    //   break;
+    case 'filling':
+      form.reset();
+      feedback.classList.remove('text-danger');
+      feedback.classList.add('text-success');
+      input.classList.remove('is-invalid');
+      btn.disabled = false;
+      input.focus();
+      break;
     default:
       throw new Error('хз что происходит');
   }
@@ -74,13 +80,13 @@ const postsRender = (posts, i18n) => {
   // console.log(postsLink);
 };
 
-const appWiev = (model, i18n) => onChange(model, (path, value) => {
-  // console.log(path);
+const appWiev = (model, elements, i18n) => onChange(model, (path, value) => {
+  // console.log(elements);
   const { feedbackMessage } = model.rssForm;
 
   switch (path) {
     case 'rssForm.state':
-      rssFormRender(value, feedbackMessage);
+      rssFormRender(value, feedbackMessage, elements.rssForm);
       break;
     case 'feed':
       feedRender(value, i18n);
