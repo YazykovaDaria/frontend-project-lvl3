@@ -7,8 +7,9 @@ export default {
         rssForm: {
           invalidUrl: 'Ссылка должна быть валидным URL',
           repeatUrl: 'RSS уже существует',
-          sucsses: 'RSS успешно загружен',
-          upload: 'RSS загружается',
+          uploadSucsses: 'RSS успешно загружен',
+          uploadFail: 'Проверте подключение к сети',
+          uploading: 'RSS загружается',
         },
         posts: {
           title: 'Посты',
