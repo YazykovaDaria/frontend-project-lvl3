@@ -17,7 +17,7 @@ const model = {
   posts: [],
   modal: {
     visible: false,
-    data: [],
+    data: {},
   },
 };
 
@@ -33,6 +33,13 @@ const elements = {
     list: document.querySelector('.list-group'),
   },
   feedContainer: document.querySelector('.feeds'),
+  modal: {
+    container: document.querySelector('#modal'),
+    title: document.querySelector('.modal-title'),
+    description: document.querySelector('.modal-body'),
+    link: document.querySelector('.full-article'),
+    btn: document.querySelector('#modal-close'),
+  },
 };
 
 i18next.init(locale);
@@ -61,7 +68,7 @@ const addFeedAndPosts = (link) => {
     });
 };
 
-// addFeedAndPosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=10');
+addFeedAndPosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=10');
 
 const app = () => {
   elements.rssForm.form.addEventListener('submit', (e) => {
@@ -79,13 +86,22 @@ const app = () => {
       .catch((err) => {
         model.rssForm.feedbackMessage = err.message;
         watchedModel.rssForm.state = 'invalid';
-        // console.log(err);
       });
   });
 
   elements.rssForm.input.addEventListener('input', () => {
     watchedModel.rssForm.state = 'waiting';
   });
+
+  elements.posts.list.addEventListener('click', (e) => {
+    const parent = e.target.closest('li');
+    const id = parent.getAttribute('id');
+    const elData = model.posts.filter((post) => post.id === id);
+    const [data] = elData;
+    model.modal.data = data;
+    watchedModel.modal.visible = true;
+    //console.log(elData);
+  })
 };
 
 export default app;

@@ -54,8 +54,8 @@ const postsRender = (posts, i18n, { container, list }) => {
   const btnContent = i18n.t('posts.btn');
 
   const postsLink = posts.map((post) => {
-    const link = `<li class="d-flex justify-content-between align-items-center my-2">
-    <a href=${post.link} id=${post.id}>${post.title}</a>
+    const link = `<li class="d-flex justify-content-between align-items-center my-2" id=${post.id}>
+    <a href=${post.link}>${post.title}</a>
     <button class="btn btn-outline-primary">${btnContent}</button>
     </li>`;
     // document.createElement('a');
@@ -69,8 +69,22 @@ const postsRender = (posts, i18n, { container, list }) => {
   container.append(list);
 };
 
+//почему модалку не видно?
+const modalRender = (content, {
+  container, title, description, link,
+}) => {
+  console.log(content);
+  title.textContent = content.title;
+  description.textContent = 'just test'
+  //content.description;
+  link.href = content.link;
+  container.setAttribute('style', 'display: block;');
+  console.log('hi');
+};
+
 const appWiev = (model, elements, i18n) => onChange(model, (path, value) => {
   const { feedbackMessage } = model.rssForm;
+  const { data } = model.modal;
 
   switch (path) {
     case 'rssForm.state':
@@ -82,7 +96,10 @@ const appWiev = (model, elements, i18n) => onChange(model, (path, value) => {
     case 'posts':
       postsRender(value, i18n, elements.posts);
       break;
-
+    case 'modal.visible':
+      console.log(elements.modal);
+      modalRender(data, elements.modal);
+      break;
     default:
       throw new Error('unknow path');
   }
