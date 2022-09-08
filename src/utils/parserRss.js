@@ -8,7 +8,7 @@ export default (xml) => {
   const parser = new DOMParser();
   const channel = parser.parseFromString(xml, 'text/xml');
   if (channel.querySelector('parsererror')) {
-    throw new Error('parsererror');
+    throw new Error('parser error');
   }
   const feedItems = Array.from(channel.querySelectorAll('item'))
     .map(itemData);
