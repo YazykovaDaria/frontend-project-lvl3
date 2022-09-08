@@ -5,8 +5,7 @@ import validateUrl from './utils/validation';
 import locale from './utils/locales';
 import getRssData from './utils/getRssData';
 import parser from './utils/parserRss';
-import addId from './utils/addId';
-
+import generateId from './utils/generateId';
 
 const model = {
   rssForm: {
@@ -16,10 +15,10 @@ const model = {
   },
   feed: {},
   posts: [],
-modal: {
-  visible: false,
-  data: [],
-},
+  modal: {
+    visible: false,
+    data: [],
+  },
 };
 
 const elements = {
@@ -29,7 +28,10 @@ const elements = {
     feedback: document.querySelector('.feedback'),
     btn: document.querySelector('#rss-btn'),
   },
-  postsContainer: document.querySelector('.list-group'),
+  posts: {
+    container: document.querySelector('.posts'),
+    list: document.querySelector('.list-group'),
+  },
   feedContainer: document.querySelector('.feeds'),
 };
 
@@ -39,18 +41,27 @@ const watchedModel = appWiev(model, elements, i18next);
 const addFeedAndPosts = (link) => {
   getRssData(link)
     .then((xml) => {
-      const rssContent = addId(parser(xml.contents));
+      const rssContent = generateId(parser(xml.contents));
       watchedModel.feed = rssContent.feed;
       watchedModel.posts = rssContent.posts;
       model.rssForm.feedbackMessage = i18next.t('rssForm.uploadSucsses');
       watchedModel.rssForm.state = 'filling';
     })
     .catch((err) => {
-      console.log(err);
+      //console.log(`error: ${err.message}`);
+      const { message } = err;
+      if (message === 'parser error') {
+        model.rssForm.feedbackMessage = i18next.t('rssForm.parser');
+        watchedModel.rssForm.state = 'waiting';
+      } else if (message === 'Network Error') {
+        model.rssForm.feedbackMessage = i18next.t('rssForm.uploadFail');
+        model.rssForm.inputValue = [];
+        watchedModel.rssForm.state = 'waiting';
+      }
     });
 };
 
-//addFeedAndPosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=10');
+// addFeedAndPosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=10');
 
 const app = () => {
   elements.rssForm.form.addEventListener('submit', (e) => {

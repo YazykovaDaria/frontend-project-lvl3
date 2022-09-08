@@ -10,6 +10,7 @@ export default {
           uploadSucsses: 'RSS успешно загружен',
           uploadFail: 'Проверте подключение к сети',
           uploading: 'RSS загружается',
+          parser: 'Ресурс не содержит валидный RSS',
         },
         posts: {
           title: 'Посты',
