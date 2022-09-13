@@ -1,6 +1,6 @@
 // import 'bootstrap/dist/css/bootstrap.min.css';
 import i18next from 'i18next';
-import { uniqueId } from 'lodash';
+import _ from 'lodash';
 import appWiev from './wiev';
 import validateUrl from './utils/validation';
 import locale from './utils/locales';
@@ -30,6 +30,7 @@ const elements = {
   },
   posts: {
     container: document.querySelector('.posts'),
+    title: document.querySelector('.post-title'),
     list: document.querySelector('.list-group'),
   },
   feedContainer: document.querySelector('.feeds'),
@@ -49,7 +50,7 @@ const errorsHandler = (err, message) => {
   switch (err) {
     case 'parser error':
       model.rssForm.feedbackMessage = i18next.t('rssForm.parser');
-      watchedModel.rssForm.state = 'waiting';
+      watchedModel.rssForm.state = 'invalid';
       break;
     case 'Network Error':
       model.rssForm.feedbackMessage = i18next.t('rssForm.uploadFail');
@@ -69,8 +70,8 @@ const addFeedAndPosts = (link) => {
   getRssData(link)
     .then((xml) => {
       const rssContent = parser(xml.contents);
-      const feed = { ...rssContent.feed, id: uniqueId('feed') };
-      const posts = rssContent.posts.map((post) => ({ ...post, id: uniqueId('post') }));
+      const feed = { ...rssContent.feed, id: _.uniqueId('feed') };
+      const posts = rssContent.posts.map((post) => ({ ...post, id: _.uniqueId('post') }));
       watchedModel.feed = feed;
       watchedModel.posts = posts;
       model.rssForm.feedbackMessage = i18next.t('rssForm.uploadSucsses');
@@ -81,7 +82,25 @@ const addFeedAndPosts = (link) => {
     });
 };
 
-addFeedAndPosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=10');
+const updatePosts = () => {
+  //прикрутить рекурсию, придумать как обрабатывать ошибки парсера при пустом инпуте
+  getRssData(model.rssForm.inputValue)
+  //('http://lorem-rss.herokuapp.com/feed?unit=second&interval=10')
+
+  .then((xml) => {
+    //console.log(xml.contents);
+    const rssContent = parser(xml.contents);
+    //console.log(model.posts, rssContent.posts);
+    const updatedPosts = _.differenceBy(rssContent.posts, model.posts, 'link');
+    if (updatedPosts.length > 0) {
+      const newPosts = updatePosts.map((post) => ({ ...post, id: _.uniqueId('post') }));
+      watchedModel.posts = [...model.posts, ...newPosts];
+    }
+    console.log(`new: ${updatedPosts.toString()}`);
+  })
+}
+// addFeedAndPosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=5');
+// setTimeout(updatePosts, 8000);
 
 const app = () => {
   elements.rssForm.form.addEventListener('submit', (e) => {
@@ -114,6 +133,8 @@ const app = () => {
     watchedModel.modal.visible = true;
     // console.log(elData);
   });
+
+  setTimeout(updatePosts, 5000);
 };
 
 export default app;
