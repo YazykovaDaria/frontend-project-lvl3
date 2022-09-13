@@ -45,6 +45,26 @@ const elements = {
 i18next.init(locale);
 const watchedModel = appWiev(model, elements, i18next);
 
+const errorsHandler = (err, message) => {
+  switch (err) {
+    case 'parser error':
+      model.rssForm.feedbackMessage = i18next.t('rssForm.parser');
+      watchedModel.rssForm.state = 'waiting';
+      break;
+    case 'Network Error':
+      model.rssForm.feedbackMessage = i18next.t('rssForm.uploadFail');
+      model.rssForm.inputValue = [];
+      watchedModel.rssForm.state = 'waiting';
+      break;
+    case 'ValidationError':
+      model.rssForm.feedbackMessage = message;
+      watchedModel.rssForm.state = 'invalid';
+      break;
+    default:
+      throw new Error('unknow error');
+  }
+};
+
 const addFeedAndPosts = (link) => {
   getRssData(link)
     .then((xml) => {
@@ -55,20 +75,13 @@ const addFeedAndPosts = (link) => {
       watchedModel.rssForm.state = 'filling';
     })
     .catch((err) => {
-      //console.log(`error: ${err.message}`);
-      const { message } = err;
-      if (message === 'parser error') {
-        model.rssForm.feedbackMessage = i18next.t('rssForm.parser');
-        watchedModel.rssForm.state = 'waiting';
-      } else if (message === 'Network Error') {
-        model.rssForm.feedbackMessage = i18next.t('rssForm.uploadFail');
-        model.rssForm.inputValue = [];
-        watchedModel.rssForm.state = 'waiting';
-      }
+      errorsHandler(err.message);
     });
 };
 
-addFeedAndPosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=10');
+// addFeedAndPosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=10');
+
+
 
 const app = () => {
   elements.rssForm.form.addEventListener('submit', (e) => {
@@ -84,8 +97,7 @@ const app = () => {
         addFeedAndPosts(res);
       })
       .catch((err) => {
-        model.rssForm.feedbackMessage = err.message;
-        watchedModel.rssForm.state = 'invalid';
+        errorsHandler(err.name, err.message);
       });
   });
 
@@ -100,8 +112,8 @@ const app = () => {
     const [data] = elData;
     model.modal.data = data;
     watchedModel.modal.visible = true;
-    //console.log(elData);
-  })
+    // console.log(elData);
+  });
 };
 
 export default app;
