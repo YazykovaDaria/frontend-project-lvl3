@@ -1,16 +1,16 @@
 // import 'bootstrap/dist/css/bootstrap.min.css';
 import i18next from 'i18next';
+import { uniqueId } from 'lodash';
 import appWiev from './wiev';
 import validateUrl from './utils/validation';
 import locale from './utils/locales';
 import getRssData from './utils/getRssData';
 import parser from './utils/parserRss';
-import generateId from './utils/generateId';
 
 const model = {
   rssForm: {
     state: 'filling',
-    inputValue: [],
+    inputValue: '',
     feedbackMessage: '',
   },
   feed: {},
@@ -68,9 +68,11 @@ const errorsHandler = (err, message) => {
 const addFeedAndPosts = (link) => {
   getRssData(link)
     .then((xml) => {
-      const rssContent = generateId(parser(xml.contents));
-      watchedModel.feed = rssContent.feed;
-      watchedModel.posts = rssContent.posts;
+      const rssContent = parser(xml.contents);
+      const feed = { ...rssContent.feed, id: uniqueId('feed') };
+      const posts = rssContent.posts.map((post) => ({ ...post, id: uniqueId('post') }));
+      watchedModel.feed = feed;
+      watchedModel.posts = posts;
       model.rssForm.feedbackMessage = i18next.t('rssForm.uploadSucsses');
       watchedModel.rssForm.state = 'filling';
     })
@@ -79,9 +81,7 @@ const addFeedAndPosts = (link) => {
     });
 };
 
-// addFeedAndPosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=10');
-
-
+addFeedAndPosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=10');
 
 const app = () => {
   elements.rssForm.form.addEventListener('submit', (e) => {
@@ -89,11 +89,11 @@ const app = () => {
     watchedModel.rssForm.state = 'validation';
     const url = new FormData(e.target).get('url').trim();
 
-    validateUrl(url, model.rssForm.inputValue, i18next)
+    validateUrl(url, [model.rssForm.inputValue], i18next)
       .then((res) => {
         model.rssForm.feedbackMessage = i18next.t('rssForm.uploading');
         watchedModel.rssForm.state = 'sending';
-        model.rssForm.inputValue = [res];
+        model.rssForm.inputValue = res;
         addFeedAndPosts(res);
       })
       .catch((err) => {
