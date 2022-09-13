@@ -48,9 +48,10 @@ const feedRender = (feedContent, i18n, feedContainer) => {
   feedContainer.append(description);
 };
 
-const postsRender = (posts, i18n, { container, list }) => {
-  const postsTitle = document.createElement('h2');
-  postsTitle.textContent = i18n.t('posts.title');
+const postsRender = (posts, i18n, { container, title, list }) => {
+ // const postsTitle = document.createElement('h2');
+  //postsTitle.textContent = i18n.t('posts.title');
+  title.textContent = i18n.t('posts.title');
   const btnContent = i18n.t('posts.btn');
 
   const postsLink = posts.map((post) => {
@@ -65,7 +66,8 @@ const postsRender = (posts, i18n, { container, list }) => {
     return link;
   });
   list.innerHTML = postsLink.join('');
-  container.append(postsTitle);
+  //container.append(postsTitle);
+  container.append(title);
   container.append(list);
 };
 
