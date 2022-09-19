@@ -1,140 +1,145 @@
-// import 'bootstrap/dist/css/bootstrap.min.css';
+/* eslint-disable no-param-reassign */
 import i18next from 'i18next';
 import _ from 'lodash';
-import appWiev from './wiev';
+import appViev from './view';
 import validateUrl from './utils/validation';
 import locale from './utils/locales';
 import getRssData from './utils/getRssData';
 import parser from './utils/parserRss';
 
-const model = {
-  rssForm: {
-    state: 'filling',
-    inputValue: '',
-    feedbackMessage: '',
-  },
-  feed: {},
-  posts: [],
-  modal: {
-    visible: false,
-    data: {},
-  },
-};
-
-const elements = {
-  rssForm: {
-    form: document.getElementById('rss-form'),
-    input: document.querySelector('#url-input'),
-    feedback: document.querySelector('.feedback'),
-    btn: document.querySelector('#rss-btn'),
-  },
-  posts: {
-    container: document.querySelector('.posts'),
-    title: document.querySelector('.post-title'),
-    list: document.querySelector('.list-group'),
-  },
-  feedContainer: document.querySelector('.feeds'),
-  modal: {
-    container: document.querySelector('#modal'),
-    title: document.querySelector('.modal-title'),
-    description: document.querySelector('.modal-body'),
-    link: document.querySelector('.full-article'),
-    btn: document.querySelector('#modal-close'),
-  },
-};
-
-i18next.init(locale);
-const watchedModel = appWiev(model, elements, i18next);
-
-const errorsHandler = (err, message) => {
+//переделать, сейчас надо пробрасывать model через addFeedandPosts
+const errorsHandler = (err, i18n, watcher, message, model) => {
+ console.log(err);
   switch (err) {
     case 'parser error':
-      model.rssForm.feedbackMessage = i18next.t('rssForm.parser');
-      watchedModel.rssForm.state = 'invalid';
+      watcher.rssForm.state = 'invalid';
+      watcher.rssForm.feedbackMessage = i18n.t('rssForm.parser');
       break;
     case 'Network Error':
-      model.rssForm.feedbackMessage = i18next.t('rssForm.uploadFail');
-      model.rssForm.inputValue = [];
-      watchedModel.rssForm.state = 'waiting';
+      watcher.rssForm.state = 'waiting';
+      watcher.rssForm.feedbackMessage = i18n.t('rssForm.uploadFail');
+      model.rssForm.inputValues.pop();
       break;
     case 'ValidationError':
-      model.rssForm.feedbackMessage = message;
-      watchedModel.rssForm.state = 'invalid';
+      watcher.rssForm.state = 'invalid';
+      watcher.rssForm.feedbackMessage = message;
       break;
     default:
       throw new Error('unknow error');
   }
 };
 
-const addFeedAndPosts = (link) => {
+const addFeedAndPosts = (link, watcher, i18n) => {
   getRssData(link)
     .then((xml) => {
       const rssContent = parser(xml.contents);
       const feed = { ...rssContent.feed, id: _.uniqueId('feed') };
-      const posts = rssContent.posts.map((post) => ({ ...post, id: _.uniqueId('post') }));
-      watchedModel.feed = feed;
-      watchedModel.posts = posts;
-      model.rssForm.feedbackMessage = i18next.t('rssForm.uploadSucsses');
-      watchedModel.rssForm.state = 'filling';
+      //watcher.feeds.push(feed)
+      watcher.feeds = [feed, ...watcher.feeds];
+
+      const posts = rssContent.posts.map((post) => ({ ...post, id: _.uniqueId('post'), feedLink: link }));
+      watcher.posts = [...posts, ...watcher.posts];
+      //.push(posts);
+      watcher.rssForm.state = 'filling';
+      watcher.rssForm.feedbackMessage = i18n.t('rssForm.uploadSucsses');
     })
     .catch((err) => {
-      errorsHandler(err.message);
+      errorsHandler(err.message, i18n, watcher);
     });
 };
 
 const updatePosts = () => {
-  //прикрутить рекурсию, придумать как обрабатывать ошибки парсера при пустом инпуте
-  getRssData(model.rssForm.inputValue)
-  //('http://lorem-rss.herokuapp.com/feed?unit=second&interval=10')
+  // прикрутить рекурсию, придумать как обрабатывать ошибки парсера при пустом инпуте
+  getRssData(watcher.rssForm.inputValues)
+  // ('http://lorem-rss.herokuapp.com/feed?unit=second&interval=10')
 
-  .then((xml) => {
-    //console.log(xml.contents);
-    const rssContent = parser(xml.contents);
-    //console.log(model.posts, rssContent.posts);
-    const updatedPosts = _.differenceBy(rssContent.posts, model.posts, 'link');
-    if (updatedPosts.length > 0) {
-      const newPosts = updatePosts.map((post) => ({ ...post, id: _.uniqueId('post') }));
-      watchedModel.posts = [...model.posts, ...newPosts];
-    }
-    console.log(`new: ${updatedPosts.toString()}`);
-  })
-}
-// addFeedAndPosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=5');
-// setTimeout(updatePosts, 8000);
+    .then((xml) => {
+    // console.log(xml.contents);
+      const rssContent = parser(xml.contents);
+      // console.log(watcher.posts, rssContent.posts);
+      const updatedPosts = _.differenceBy(rssContent.posts, watcher.posts, 'link');
+      if (updatedPosts.length > 0) {
+        const newPosts = updatePosts.map((post) => ({ ...post, id: _.uniqueId('post') }));
+        watcher.posts = [...watcher.posts, ...newPosts];
+      }
+      console.log(`new: ${updatedPosts.toString()}`);
+    });
+};
 
 const app = () => {
+  const model = {
+    rssForm: {
+      state: 'filling',
+      inputValues: [],
+      feedbackMessage: '',
+    },
+    feeds: [],
+    posts: [],
+    modal: {
+      visible: false,
+      data: {},
+    },
+  };
+
+  const elements = {
+    rssForm: {
+      form: document.getElementById('rss-form'),
+      input: document.querySelector('#url-input'),
+      feedback: document.querySelector('.feedback'),
+      btn: document.querySelector('#rss-btn'),
+    },
+    feedContainer: document.querySelector('.feeds'),
+    postsContainer: document.querySelector('.posts'),
+    modal: {
+      container: document.querySelector('#modal'),
+      title: document.querySelector('.modal-title'),
+      description: document.querySelector('.modal-body'),
+      link: document.querySelector('.full-article'),
+      btn: document.querySelector('#modal-close'),
+    },
+  };
+
+  const i18n = i18next.createInstance();
+  i18n.init(locale);
+
+  const watcher = appViev(model, elements, i18n);
+
+ addFeedAndPosts('https://ru.hexlet.io/lessons.rss', watcher, i18n);
+  addFeedAndPosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=10', watcher, i18n);
+
+
   elements.rssForm.form.addEventListener('submit', (e) => {
     e.preventDefault();
-    watchedModel.rssForm.state = 'validation';
+    watcher.rssForm.state = 'validation';
     const url = new FormData(e.target).get('url').trim();
 
-    validateUrl(url, [model.rssForm.inputValue], i18next)
-      .then((res) => {
-        model.rssForm.feedbackMessage = i18next.t('rssForm.uploading');
-        watchedModel.rssForm.state = 'sending';
-        model.rssForm.inputValue = res;
-        addFeedAndPosts(res);
+    validateUrl(url, watcher.rssForm.inputValues, i18n)
+      .then((link) => {
+        watcher.rssForm.state = 'sending';
+        watcher.rssForm.feedbackMessage = i18n.t('rssForm.uploading');
+        model.rssForm.inputValues.push(link);
+       addFeedAndPosts(link, watcher, i18n);
       })
       .catch((err) => {
-        errorsHandler(err.name, err.message);
+        errorsHandler(err.name, i18n, watcher, err.message, model);
       });
   });
 
   elements.rssForm.input.addEventListener('input', () => {
-    watchedModel.rssForm.state = 'waiting';
+    watcher.rssForm.state = 'waiting';
   });
 
-  elements.posts.list.addEventListener('click', (e) => {
-    const parent = e.target.closest('li');
-    const id = parent.getAttribute('id');
-    const elData = model.posts.filter((post) => post.id === id);
-    const [data] = elData;
-    model.modal.data = data;
-    watchedModel.modal.visible = true;
-    // console.log(elData);
-  });
+  // elements.posts.list.addEventListener('click', (e) => {
+  //   const parent = e.target.closest('li');
+  //   const id = parent.getAttribute('id');
+  //   const elData = model.posts.filter((post) => post.id === id);
+  //   const [data] = elData;
+  //   watcher.modal.data = data;
+  //   watcher.modal.visible = true;
+  //   // console.log(elData);
+  // });
 
-  setTimeout(updatePosts, 5000);
+  // setTimeout(updatePosts, 5000);
 };
 
 export default app;
