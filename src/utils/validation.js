@@ -1,6 +1,6 @@
 import { string, setLocale } from 'yup';
 
-const validateUrl = (url, validatedValues, i18n) => {
+const validateUrl = (url, watcher, i18n) => {
   setLocale({
     string: {
       url: i18n.t('rssForm.invalidUrl'),
@@ -9,7 +9,7 @@ const validateUrl = (url, validatedValues, i18n) => {
       notOneOf: i18n.t('rssForm.repeatUrl'),
     },
   });
-
+  const validatedValues = watcher.feeds.map((feed) => feed.link);
   const urlScheema = string().url().notOneOf(validatedValues);
   return urlScheema.validate(url, { abortEarly: false });
 };

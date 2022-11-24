@@ -34,7 +34,7 @@ const rssFormRender = (state, {
 };
 
 const feedRender = (feeds, i18n, feedContainer) => {
-  console.log(feeds)
+ // console.log(feeds)
   feedContainer.innerHTML = '';
   const feedsTitle = document.createElement('h2');
   feedsTitle.textContent = i18n.t('feed');
