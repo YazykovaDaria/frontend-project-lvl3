@@ -7,8 +7,9 @@ import locale from './utils/locales';
 import getRssData from './utils/getRssData';
 import parser from './utils/parserRss';
 
+const updateTime = 5000;
+
 const errorsHandler = (err, i18n, watcher) => {
-  console.log(err);
   switch (err) {
     case 'parser error':
       watcher.rssForm.state = 'invalid';
@@ -40,37 +41,31 @@ const addFeedAndPosts = (link, watcher, i18n) => {
       watcher.rssForm.feedbackMessage = i18n.t('rssForm.uploadSucsses');
     })
     .catch((err) => {
-      // watcher.rssForm.state = 'invalid';
-      // watcher.rssForm.feedbackMessage = err.message;
       errorsHandler(err.message, i18n, watcher);
     });
 };
 
-const updatePosts = (link) => {
-  // прикрутить рекурсию, придумать как обрабатывать ошибки парсера при пустом инпуте
-  // getRssData(link)
-
-  // ('http://lorem-rss.herokuapp.com/feed?unit=second&interval=10')
-
-  // .then((xml) => {
-  // console.log(xml.contents);
-  const rssContent = parser(xml.contents);
-  // console.log(rssContent);
-  // const updatedPosts = _.differenceBy(rssContent.posts, watcher.posts, 'link');
-  // if (updatedPosts.length > 0) {
-  //   const newPosts = updatePosts.map((post) => ({ ...post, id: _.uniqueId('post') }));
-  //   watcher.posts = [...watcher.posts, ...newPosts];
-  // }
-  // console.log(`new: ${updatedPosts.toString()}`);
-  // });
+const updatePosts = (watcher) => {
+  const update = watcher.feeds.map((feed) => {
+    const { link } = feed;
+    return getRssData(link)
+      .then((xml) => {
+        const rssContent = parser(xml.contents);
+        const updatedPosts = _.differenceBy(rssContent.posts, watcher.posts, 'link');
+        if (updatedPosts.length > 0) {
+          const newPosts = updatedPosts.map((post) => ({ ...post, id: _.uniqueId('post') }));
+          watcher.posts = [...watcher.posts, ...newPosts];
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+  Promise.all(update).finally(setTimeout(() => updatePosts(watcher), updateTime));
 };
 
 const app = () => {
-  // updatePosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=10');
-
-  // setTimeout(() => {
-  //   updatePosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=10');
-  // }, 20000)
+  // updatePosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=5');
 
   const model = {
     rssForm: {
@@ -80,7 +75,7 @@ const app = () => {
     feeds: [],
     posts: [],
     modal: {
-      visible: false,
+      lookedPosts: new Set(),
       data: {},
     },
   };
@@ -107,9 +102,6 @@ const app = () => {
   i18n.init(locale);
 
   const watcher = appViev(model, elements, i18n);
-
-  //  addFeedAndPosts('https://ru.hexlet.io/lessons.rss', watcher, i18n);
-  //   addFeedAndPosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=10', watcher, i18n);
 
   elements.rssForm.form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -142,7 +134,7 @@ const app = () => {
   //   // console.log(elData);
   // });
 
-  // setTimeout(updatePosts, 5000);
+  setTimeout(() => updatePosts(watcher, i18n), updateTime);
 };
 
 export default app;
