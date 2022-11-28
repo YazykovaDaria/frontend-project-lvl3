@@ -34,7 +34,6 @@ const rssFormRender = (state, {
 };
 
 const feedRender = (feeds, i18n, feedContainer) => {
- // console.log(feeds)
   feedContainer.innerHTML = '';
   const feedsTitle = document.createElement('h2');
   feedsTitle.textContent = i18n.t('feed');
@@ -54,9 +53,7 @@ const feedRender = (feeds, i18n, feedContainer) => {
 };
 
 const postsRender = (posts, i18n, container) => {
- // console.log(posts);
   container.innerHTML = '';
-  // container.textContent = 'posts'
   const btnContent = i18n.t('posts.btn');
   const postsTitle = document.createElement('h2');
   postsTitle.textContent = i18n.t('posts.title');
@@ -68,7 +65,6 @@ const postsRender = (posts, i18n, container) => {
   posts.forEach((post) => {
     const li = document.createElement('li');
     li.classList.add('d-flex', 'justify-content-between', 'align-items-center', 'my-2');
-    li.setAttribute('id', `${post.id}`);
 
     const a = document.createElement('a');
     a.href = post.link;
@@ -76,6 +72,9 @@ const postsRender = (posts, i18n, container) => {
 
     const button = document.createElement('button');
     button.classList.add('btn', 'btn-outline-primary');
+    button.setAttribute('data-bs-toggle', 'modal');
+    button.setAttribute('data-bs-target', '#modal');
+    button.setAttribute('id', `${post.id}`);
     button.textContent = btnContent;
     li.prepend(a);
     li.append(button);
@@ -88,17 +87,13 @@ const postsRender = (posts, i18n, container) => {
 const showFeedback = (message, element) => {
   element.textContent = message;
 };
-// почему модалку не видно?
+
 const modalRender = (content, {
-  container, title, description, link,
+  title, description, link,
 }) => {
-  console.log(content);
   title.textContent = content.title;
-  description.textContent = 'just test';
-  // content.description;
+  description.textContent = content.description;
   link.href = content.link;
-  container.setAttribute('style', 'display: block;');
-  console.log('hi');
 };
 
 const appViev = (model, elements, i18n) => onChange(model, (path, value) => {
@@ -117,8 +112,8 @@ const appViev = (model, elements, i18n) => onChange(model, (path, value) => {
     case 'posts':
       postsRender(value, i18n, elements.postsContainer);
       break;
-    case 'modal.visible':
-      // console.log(elements.modal);
+
+    case 'modal.data':
       modalRender(data, elements.modal);
       break;
     default:
