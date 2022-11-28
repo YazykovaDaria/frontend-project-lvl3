@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
 import onChange from 'on-change';
+import _ from 'lodash';
 
 const rssFormRender = (state, {
   feedback, btn, form, input,
@@ -67,6 +68,7 @@ const postsRender = (posts, i18n, container) => {
     li.classList.add('d-flex', 'justify-content-between', 'align-items-center', 'my-2');
 
     const a = document.createElement('a');
+    a.classList.add('fw-bold');
     a.href = post.link;
     a.textContent = post.title;
 
@@ -96,8 +98,14 @@ const modalRender = (content, {
   link.href = content.link;
 };
 
+const markedVisitedPost = (postId) => {
+  const button = document.getElementById(postId);
+  const a = button.parentNode.children[0];
+  a.classList.replace('fw-bold', 'fw-normal');
+};
+
 const appViev = (model, elements, i18n) => onChange(model, (path, value) => {
-  const { data } = model.modal;
+  const lastPostId = _.last(Array.from(model.modal.lookedPosts));
 
   switch (path) {
     case 'rssForm.state':
@@ -112,9 +120,11 @@ const appViev = (model, elements, i18n) => onChange(model, (path, value) => {
     case 'posts':
       postsRender(value, i18n, elements.postsContainer);
       break;
-
     case 'modal.data':
-      modalRender(data, elements.modal);
+      modalRender(value, elements.modal);
+      break;
+    case 'modal.lookedPosts':
+      markedVisitedPost(lastPostId);
       break;
     default:
       throw new Error('unknow path');

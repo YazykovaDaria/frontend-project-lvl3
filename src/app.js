@@ -67,7 +67,6 @@ const updatePosts = (watcher) => {
 const app = () => {
   // updatePosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=5');
 
-
   const model = {
     rssForm: {
       state: 'filling',
@@ -91,11 +90,9 @@ const app = () => {
     feedContainer: document.querySelector('.feeds'),
     postsContainer: document.querySelector('.posts'),
     modal: {
-      //container: document.querySelector('#modal'),
       title: document.querySelector('.modal-title'),
       description: document.querySelector('.modal-body'),
       link: document.querySelector('.full-article'),
-      //btn: document.querySelector('#modal-close'),
     },
   };
 
@@ -103,8 +100,6 @@ const app = () => {
   i18n.init(locale);
 
   const watcher = appViev(model, elements, i18n);
-
-  //addFeedAndPosts('https://ru.hexlet.io/lessons.rss', watcher, i18n);
 
   elements.rssForm.form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -128,14 +123,15 @@ const app = () => {
   });
 
   elements.postsContainer.addEventListener('click', (e) => {
-    const {id} = e.target;
-    //console.log('hi');
-    // const parent = e.target.closest('li');
-    // const id = parent.getAttribute('id');
-    const elData = model.posts.filter((post) => post.id === id);
-    const [data] = elData;
-    watcher.modal.data = data;
-    //watcher.modal.visible = true;
+    const { id } = e.target;
+    if (!id) return;
+      const elData = model.posts.filter((post) => post.id === id);
+      const [data] = elData;
+      watcher.modal.data = data;
+watcher.modal.lookedPosts.add(id);
+
+
+    // watcher.modal.visible = true;
     // console.log(elData);
   });
 
