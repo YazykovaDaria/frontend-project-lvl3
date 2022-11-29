@@ -8,9 +8,10 @@ export default {
           invalidUrl: 'Ссылка должна быть валидным URL',
           repeatUrl: 'RSS уже существует',
           uploadSucsses: 'RSS успешно загружен',
-          uploadFail: 'Проверте подключение к сети',
+          uploadFail: 'Ошибка сети',
           uploading: 'RSS загружается',
           parser: 'Ресурс не содержит валидный RSS',
+          empty: 'Не должно быть пустым',
         },
         posts: {
           title: 'Посты',

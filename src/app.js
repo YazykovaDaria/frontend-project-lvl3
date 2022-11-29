@@ -65,8 +65,6 @@ const updatePosts = (watcher) => {
 };
 
 const app = () => {
-  // updatePosts('http://lorem-rss.herokuapp.com/feed?unit=second&interval=5');
-
   const model = {
     rssForm: {
       state: 'filling',
@@ -106,16 +104,21 @@ const app = () => {
     watcher.rssForm.state = 'validation';
     const url = new FormData(e.target).get('url').trim();
 
-    validateUrl(url, watcher, i18n)
-      .then((link) => {
-        watcher.rssForm.state = 'sending';
-        watcher.rssForm.feedbackMessage = i18n.t('rssForm.uploading');
-        addFeedAndPosts(link, watcher, i18n);
-      })
-      .catch((err) => {
-        watcher.rssForm.state = 'invalid';
-        watcher.rssForm.feedbackMessage = err.message;
-      });
+    if (url === '') {
+      watcher.rssForm.state = 'invalid';
+      watcher.rssForm.feedbackMessage = i18n.t('rssForm.empty');
+    } else {
+      validateUrl(url, watcher, i18n)
+        .then((link) => {
+          watcher.rssForm.state = 'sending';
+          watcher.rssForm.feedbackMessage = i18n.t('rssForm.uploading');
+          addFeedAndPosts(link, watcher, i18n);
+        })
+        .catch((err) => {
+          watcher.rssForm.state = 'invalid';
+          watcher.rssForm.feedbackMessage = err.message;
+        });
+    }
   });
 
   elements.rssForm.input.addEventListener('input', () => {
@@ -125,14 +128,10 @@ const app = () => {
   elements.postsContainer.addEventListener('click', (e) => {
     const { id } = e.target;
     if (!id) return;
-      const elData = model.posts.filter((post) => post.id === id);
-      const [data] = elData;
-      watcher.modal.data = data;
-watcher.modal.lookedPosts.add(id);
-
-
-    // watcher.modal.visible = true;
-    // console.log(elData);
+    const elData = model.posts.filter((post) => post.id === id);
+    const [data] = elData;
+    watcher.modal.data = data;
+    watcher.modal.lookedPosts.add(id);
   });
 
   setTimeout(() => updatePosts(watcher, i18n), updateTime);
