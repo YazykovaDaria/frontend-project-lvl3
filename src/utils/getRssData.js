@@ -1,5 +1,16 @@
 import * as axios from 'axios';
 
-const getRssData = (link) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(link)}`).then((response) => response.data);
+const buildUrl = (link) => {
+  const proxy = 'https://allorigins.hexlet.app/';
+  const url = new URL(proxy);
+  url.pathname = 'get';
+  url.search = `disableCache=true&url=${encodeURIComponent(link)}`;
+  return url;
+};
+
+const getRssData = (link) => {
+  const url = buildUrl(link);
+  return axios.get(url).then((response) => response.data);
+};
 
 export default getRssData;

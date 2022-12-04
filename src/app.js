@@ -3,65 +3,62 @@ import i18next from 'i18next';
 import _ from 'lodash';
 import appViev from './view';
 import validateUrl from './utils/validation';
-import locale from './utils/locales';
+import locale from './locales/locales';
 import getRssData from './utils/getRssData';
 import parser from './utils/parserRss';
 
 const updateTime = 5000;
 
-const errorsHandler = (err, i18n, watcher) => {
+const errorsHandler = (err, i18n, watchedState) => {
   switch (err) {
     case 'parser error':
-      watcher.rssForm.state = 'invalid';
-      watcher.rssForm.feedbackMessage = i18n.t('rssForm.parser');
+      watchedState.rssForm.state = 'invalid';
+      watchedState.rssForm.feedbackMessage = i18n.t('rssForm.parser');
       break;
     case 'Network Error':
-      watcher.rssForm.state = 'waiting';
-      watcher.rssForm.feedbackMessage = i18n.t('rssForm.uploadFail');
+      watchedState.rssForm.state = 'waiting';
+      watchedState.rssForm.feedbackMessage = i18n.t('rssForm.uploadFail');
       break;
-    // case 'ValidationError':
-    //   watcher.rssForm.state = 'invalid';
-    //   watcher.rssForm.feedbackMessage = message;
-    //   break;
+
     default:
-      throw new Error('unknow error');
+      throw new Error('Unknown error');
   }
 };
 
-const addFeedAndPosts = (link, watcher, i18n) => {
+const addFeedAndPosts = (link, watchedState, i18n) => {
   getRssData(link)
     .then((xml) => {
       const rssContent = parser(xml.contents);
       const feed = { ...rssContent.feed, id: _.uniqueId('feed') };
       feed.link = link;
-      watcher.feeds = [feed, ...watcher.feeds];
+      watchedState.feeds = [feed, ...watchedState.feeds];
       const posts = rssContent.posts.map((post) => ({ ...post, id: _.uniqueId('post'), feedLink: link }));
-      watcher.posts = [...posts, ...watcher.posts];
-      watcher.rssForm.state = 'filling';
-      watcher.rssForm.feedbackMessage = i18n.t('rssForm.uploadSucsses');
+      watchedState.posts = [...posts, ...watchedState.posts];
+      watchedState.rssForm.state = 'filling';
+      watchedState.rssForm.feedbackMessage = i18n.t('rssForm.uploadSucsses');
     })
     .catch((err) => {
-      errorsHandler(err.message, i18n, watcher);
+      errorsHandler(err.message, i18n, watchedState);
     });
 };
 
-const updatePosts = (watcher) => {
-  const update = watcher.feeds.map((feed) => {
+const updatePosts = (watchedState) => {
+  const update = watchedState.feeds.map((feed) => {
     const { link } = feed;
     return getRssData(link)
       .then((xml) => {
         const rssContent = parser(xml.contents);
-        const updatedPosts = _.differenceBy(rssContent.posts, watcher.posts, 'link');
+        const updatedPosts = _.differenceBy(rssContent.posts, watchedState.posts, 'link');
         if (updatedPosts.length > 0) {
           const newPosts = updatedPosts.map((post) => ({ ...post, id: _.uniqueId('post') }));
-          watcher.posts = [...watcher.posts, ...newPosts];
+          watchedState.posts = [...watchedState.posts, ...newPosts];
         }
       })
       .catch((err) => {
         console.log(err);
       });
   });
-  Promise.all(update).finally(setTimeout(() => updatePosts(watcher), updateTime));
+  Promise.all(update).finally(setTimeout(() => updatePosts(watchedState), updateTime));
 };
 
 const app = () => {
@@ -97,32 +94,32 @@ const app = () => {
   const i18n = i18next.createInstance();
   i18n.init(locale);
 
-  const watcher = appViev(model, elements, i18n);
+  const watchedState = appViev(model, elements, i18n);
 
   elements.rssForm.form.addEventListener('submit', (e) => {
     e.preventDefault();
-    watcher.rssForm.state = 'validation';
+    watchedState.rssForm.state = 'validation';
     const url = new FormData(e.target).get('url').trim();
 
     if (url === '') {
-      watcher.rssForm.state = 'invalid';
-      watcher.rssForm.feedbackMessage = i18n.t('rssForm.empty');
+      watchedState.rssForm.state = 'invalid';
+      watchedState.rssForm.feedbackMessage = i18n.t('rssForm.empty');
     } else {
-      validateUrl(url, watcher, i18n)
+      validateUrl(url, watchedState, i18n)
         .then((link) => {
-          watcher.rssForm.state = 'sending';
-          watcher.rssForm.feedbackMessage = i18n.t('rssForm.uploading');
-          addFeedAndPosts(link, watcher, i18n);
+          watchedState.rssForm.state = 'sending';
+          watchedState.rssForm.feedbackMessage = i18n.t('rssForm.uploading');
+          addFeedAndPosts(link, watchedState, i18n);
         })
         .catch((err) => {
-          watcher.rssForm.state = 'invalid';
-          watcher.rssForm.feedbackMessage = err.message;
+          watchedState.rssForm.state = 'invalid';
+          watchedState.rssForm.feedbackMessage = err.message;
         });
     }
   });
 
   elements.rssForm.input.addEventListener('input', () => {
-    watcher.rssForm.state = 'waiting';
+    watchedState.rssForm.state = 'waiting';
   });
 
   elements.postsContainer.addEventListener('click', (e) => {
@@ -130,11 +127,11 @@ const app = () => {
     if (!id) return;
     const elData = model.posts.filter((post) => post.id === id);
     const [data] = elData;
-    watcher.modal.data = data;
-    watcher.modal.lookedPosts.add(id);
+    watchedState.modal.data = data;
+    watchedState.modal.lookedPosts.add(id);
   });
 
-  setTimeout(() => updatePosts(watcher, i18n), updateTime);
+  setTimeout(() => updatePosts(watchedState, i18n), updateTime);
 };
 
 export default app;

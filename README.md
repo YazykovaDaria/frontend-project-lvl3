@@ -4,4 +4,4 @@
 [![github-actions-lint](https://github.com/YazykovaDaria/frontend-project-lvl3/actions/workflows/my-workflow.yml/badge.svg)](https://github.com/YazykovaDaria/frontend-project-lvl3/actions)
 
 
-Deploy: https://rss-agregator-chi.vercel.app/
+Example: https://rss-agregator-chi.vercel.app/

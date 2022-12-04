@@ -8,7 +8,6 @@ const rssFormRender = (state, {
   switch (state) {
     case 'invalid':
       feedback.setAttribute('class', 'text-danger');
-      // classList.add('text-danger');
       btn.disabled = true;
       input.classList.add('is-invalid');
       break;
@@ -24,13 +23,12 @@ const rssFormRender = (state, {
     case 'filling':
       form.reset();
       feedback.setAttribute('class', 'text-success');
-      // feedback.classList.add('text-success');
       input.classList.remove('is-invalid');
       btn.disabled = false;
       input.focus();
       break;
     default:
-      throw new Error('хз что происходит');
+      throw new Error(`Unknown state - ${state}`);
   }
 };
 
@@ -127,7 +125,7 @@ const appViev = (model, elements, i18n) => onChange(model, (path, value) => {
       markedVisitedPost(lastPostId);
       break;
     default:
-      throw new Error('unknow path');
+      throw new Error(`Unknown path - ${path}`);
   }
 });
 
