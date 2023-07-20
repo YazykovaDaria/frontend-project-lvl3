@@ -18,3 +18,5 @@
 - Webpack
 
 Example: https://rss-agregator-chi.vercel.app/
+
+![Снимок экрана от 2023-07-20 17-25-02](https://github.com/YazykovaDaria/frontend-project-lvl3/assets/93446641/c18cde02-bf30-434b-802f-8162e7daf28b)
